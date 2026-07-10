@@ -31,7 +31,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
 
       - name: Install Dependencies
         run: npm install
@@ -43,10 +42,8 @@ jobs:
         with:
           polaris_server_url: ${{ vars.POLARIS_SERVER_URL }}
           polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }}
-
           polaris_application_name: NaughtonJM_App
           polaris_project_name: NaughtonJM_Project
-
           polaris_assessment_types: "SCA,SAST"
 
       - name: Polaris PR Scan
@@ -56,11 +53,8 @@ jobs:
         with:
           polaris_server_url: ${{ vars.POLARIS_SERVER_URL }}
           polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }}
-
           polaris_application_name: NaughtonJM_App
           polaris_project_name: NaughtonJM_Project
-
           polaris_assessment_types: "SCA,SAST"
-
           polaris_prComment_enabled: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
