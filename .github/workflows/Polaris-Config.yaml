@@ -1,0 +1,60 @@
+﻿name: CI-Polaris
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - stage
+      - release
+
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+      - stage
+      - release
+
+  workflow_dispatch:
+
+jobs:
+  polaris-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Polaris Full Scan
+        id: polaris-full-scan
+        if: github.event_name != 'pull_request'
+        uses: blackduck-inc/black-duck-security-scan@v2
+        with:
+          polaris_server_url: ${{ vars.POLARIS_SERVER_URL }}
+          polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }}
+          polaris_application_name: NaughtonJM_App
+          polaris_project_name: NaughtonJM_Project
+          polaris_assessment_types: "SCA,SAST"
+
+      - name: Polaris PR Scan
+        id: polaris-pr-scan
+        if: github.event_name == 'pull_request'
+        uses: blackduck-inc/black-duck-security-scan@v2
+        with:
+          polaris_server_url: ${{ vars.POLARIS_SERVER_URL }}
+          polaris_access_token: ${{ secrets.POLARIS_ACCESS_TOKEN }}
+          polaris_application_name: NaughtonJM_App
+          polaris_project_name: NaughtonJM_Project
+          polaris_assessment_types: "SCA,SAST"
+          polaris_prComment_enabled: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
