@@ -1,0 +1,59 @@
+name: bd-ss-action
+
+on:
+  push:
+    branches: [ main, master, develop, stage, release ]
+  pull_request:
+    branches: [ main, master, develop, stage, release ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  security-events: write
+
+jobs:
+  blackduck:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Source
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: npm
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Black Duck SCA Scan
+      uses: blackduck-inc/black-duck-security-scan@152247222aa9cd38124acd5c0cf60f4db71adc3f
+
+      env:
+        DETECT_PROJECT_NAME: ${{ github.event.repository.name }}
+        DETECT_PROJECT_VERSION_NAME: sca-lab
+
+      with:
+        blackducksca_url: ${{ vars.BLACKDUCK_URL }}
+        blackducksca_token: ${{ secrets.BLACKDUCK_API_TOKEN }}
+
+        blackducksca_scan_failure_severities: BLOCKER
+
+        blackducksca_fixpr_enabled: true
+        blackducksca_prComment_enabled: true
+
+        blackducksca_reports_sarif_create: true
+        blackducksca_upload_sarif_report: true
+
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
+        include_diagnostics: false
+
+        detect_args: >-
+          --detect.tools=DETECTOR,SIGNATURE_SCAN
+          --detect.blackduck.signature.scanner.snippet.matching=SNIPPET_MATCHING
+          --detect.accuracy.required=NONE
+          --detect.detector.search.continue=true
